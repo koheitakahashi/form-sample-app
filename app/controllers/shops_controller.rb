@@ -12,20 +12,23 @@ class ShopsController < ApplicationController
 
   # GET /shops/new
   def new
-    @form = ShopForm.new
+    books = (1..2).map { Book.new }
+    @form = ShopForm.new(Shop.new(books: books))
   end
 
   # GET /shops/1/edit
   def edit
-    @form = ShopForm.new(shop: Shop.find(params[:id]))
+    @form = ShopForm.new(Shop.find(params[:id]))
   end
 
   # POST /shops or /shops.json
   def create
-    @form = ShopForm.new(shop_params)
+    books = (1..2).map { Book.new }
+    @form = ShopForm.new(Shop.new(books: books))
 
-    if @form.save
-      redirect_to shop_path(@form.shop)
+    if @form.validate(shop_params)
+      @form.save
+      redirect_to shop_path(@form.model)
     else
       render :new
     end
@@ -33,10 +36,11 @@ class ShopsController < ApplicationController
 
   # PATCH/PUT /shops/1 or /shops/1.json
   def update
-    @form = ShopForm.new(shop_params, shop: Shop.find(params[:id]))
+    @form = ShopForm.new(Shop.find(params[:id]))
 
-    if @form.save
-      redirect_to shop_path(@form.shop)
+    if @form.validate(shop_params)
+      @form.save
+      redirect_to shop_path(@shop)
     else
       render :edit
     end
