@@ -1,11 +1,6 @@
-class ShopForm
-  include ActiveModel::Model
-  include ActiveModel::Attributes
-
-  attr_accessor :shop
-
-  attribute :name, :string
-  attribute :address, :string
+class ShopForm < YAAF::Form
+  attr_accessor :shop, :id, :name, :address
+  attr_writer :shops_attributes, :books_attributes
 
   validates :name, presence: true
   validates :address, presence: true
@@ -14,63 +9,50 @@ class ShopForm
 
   def initialize(attributes = nil, shop: Shop.new)
     @shop = shop
-    @books = shop.books
-    attributes ||= default_attributes
-    super(attributes)
-  end
+    @attributes = (attributes || {})
 
-  def save
-    return false if invalid? || invalid_books?
-
-    ActiveRecord::Base.transaction do
-      shop.assign_attributes(attributes)
-      shop.save!
-      @books.each(&:save!) if @books.present?
+    if attributes.present?
+      super(shop_attributes)
+    else
+      self.id = @shop.id
+      self.name = @shop.name
+      self.address = @shop.address
     end
 
-    true
+    @shop.assign_attributes(name: name, address: address)
+
+    super(@attributes)
+
+    @models = [@shop, books].flatten
+  end
+
+  def books
+    return @books if defined?(@books)
+    @books = []
+
+    if shop.books.present?
+      shop.books.each do |book|
+        attr = books_attributes.values&.find { |val| val["id"].to_i == book.id }
+        @books << BookForm.new(attr, book: book)
+      end
+    else
+      2.times { @books << BookForm.new(books_attributes&.dig(_1.to_s), book: shop.books.build) }
+    end
+
+    @books
   end
 
   def to_model
     shop
   end
 
-  def books
-    if shop.books.present?
-      shop.books
-    else
-      Array.new(2, Book.new)
-    end
-  end
-
-  def books_attributes=(attributes)
-    attributes.each do |_i, book_params|
-      if book_params['id'].nil?
-        shop.books.build(book_params)
-        next
-      else
-        @books.find { _1.id == book_params['id'].to_i }.assign_attributes(book_params)
-      end
-    end
-  end
-
   private
 
-  def default_attributes
-    {
-      name: shop.name,
-      address: shop.address,
-    }
+  def shop_attributes
+    @shop_attributes ||= { name: @attributes[:name], address: @attributes[:address] }
   end
 
-  def invalid_books?
-    results = @books.map do |book|
-      next false unless book.invalid?
-
-      errors.add(:books, book.errors.full_messages.join)
-      true
-    end
-
-    results.any?
+  def books_attributes
+    @books_attributes ||= (@attributes[:books_attributes] || {} )
   end
 end
