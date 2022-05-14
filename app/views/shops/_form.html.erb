@@ -21,6 +21,17 @@
     <%= form.text_field :address %>
   </div>
 
+  <h2> Books </h2>
+    <div>
+      <%= form.fields_for :books do |ff| %>
+        <p><%= label_tag :title %>
+        <p><%= ff.text_field :title %>
+
+        <p><%= label_tag :description %>
+        <p><%= ff.text_field :description %>
+      <% end %>
+    </div>
+
   <div>
     <%= form.submit %>
   </div>

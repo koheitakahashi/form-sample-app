@@ -1,6 +1,12 @@
 <p style="color: green"><%= notice %></p>
 
+<h1>Shop</h1>
+
 <%= render @shop %>
+
+<h2>Books</h2>
+
+<%= render @shop.books %>
 
 <div>
   <%= link_to "Edit this shop", edit_shop_path(@shop) %> |
