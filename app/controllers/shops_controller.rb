@@ -12,45 +12,39 @@ class ShopsController < ApplicationController
 
   # GET /shops/new
   def new
-    @shop = Shop.new
+    @form = ShopForm.new
   end
 
   # GET /shops/1/edit
   def edit
+    @form = ShopForm.new(shop: Shop.find(params[:id]))
   end
 
   # POST /shops or /shops.json
   def create
-    @shop = Shop.new(shop_params)
+    @form = ShopForm.new(shop_params)
 
-    respond_to do |format|
-      if @shop.save
-        format.html { redirect_to shop_url(@shop), notice: "Shop was successfully created." }
-        format.json { render :show, status: :created, location: @shop }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @shop.errors, status: :unprocessable_entity }
-      end
+    if @form.save
+      redirect_to shop_path(@form.shop)
+    else
+      render :new
     end
   end
 
   # PATCH/PUT /shops/1 or /shops/1.json
   def update
-    respond_to do |format|
-      if @shop.update(shop_params)
-        format.html { redirect_to shop_url(@shop), notice: "Shop was successfully updated." }
-        format.json { render :show, status: :ok, location: @shop }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @shop.errors, status: :unprocessable_entity }
-      end
+    @form = ShopForm.new(shop_params, shop: Shop.find(params[:id]))
+
+    if @form.save
+      redirect_to shop_path(@form.shop)
+    else
+      render :edit
     end
   end
 
   # DELETE /shops/1 or /shops/1.json
   def destroy
     @shop.destroy
-
     respond_to do |format|
       format.html { redirect_to shops_url, notice: "Shop was successfully destroyed." }
       format.json { head :no_content }
@@ -65,6 +59,6 @@ class ShopsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def shop_params
-      params.require(:shop).permit(:name, :address)
+      params.fetch(:shop, {}).permit(:id, :name, :address, books_attributes: [:id, :title, :description])
     end
 end

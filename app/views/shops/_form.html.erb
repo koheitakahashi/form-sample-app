@@ -1,10 +1,10 @@
-<%= form_with(model: shop) do |form| %>
-  <% if shop.errors.any? %>
+<%= form_with(model: form, data: { turbo: false }) do |shop_form| %>
+  <% if form.errors.any? %>
     <div style="color: red">
-      <h2><%= pluralize(shop.errors.count, "error") %> prohibited this shop from being saved:</h2>
+      <h2><%= pluralize(form.errors.count, "error") %> prohibited this shop from being saved:</h2>
 
       <ul>
-        <% shop.errors.each do |error| %>
+        <% form.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
       </ul>
@@ -12,16 +12,27 @@
   <% end %>
 
   <div>
-    <%= form.label :name, style: "display: block" %>
-    <%= form.text_field :name %>
+    <%= shop_form.label :name, style: "display: block" %>
+    <%= shop_form.text_field :name %>
   </div>
 
   <div>
-    <%= form.label :address, style: "display: block" %>
-    <%= form.text_field :address %>
+    <%= shop_form.label :address, style: "display: block" %>
+    <%= shop_form.text_field :address %>
   </div>
 
+  <h2> Books </h2>
+
   <div>
-    <%= form.submit %>
+    <%= shop_form.fields_for :books do |book_form| %>
+      <p><%= label_tag :title %>
+      <p><%= book_form.text_field :title %>
+
+      <p><%= label_tag :description %>
+      <p><%= book_form.text_field :description %>
+    <% end %>
+  </div>
+  <div>
+    <%= shop_form.submit %>
   </div>
 <% end %>
